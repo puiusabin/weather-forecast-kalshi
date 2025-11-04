@@ -6,10 +6,155 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Optional
 from datetime import datetime
+import re
+import json
 
 
 class AdditionalWeatherSources:
     """Forecast sources that require scraping or alternative access"""
+
+    @staticmethod
+    def get_foreca() -> Optional[float]:
+        """
+        Get forecast from Foreca for NYC
+        Foreca is known for good European and US forecasts
+        """
+        try:
+            # Foreca URL for New York City
+            url = "https://www.foreca.com/United-States/New-York/New-York"
+
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            }
+
+            response = requests.get(url, headers=headers, timeout=15)
+
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+
+                # Foreca typically shows high temp prominently
+                # Look for temperature elements
+                temp_selectors = [
+                    'span.temp_high',
+                    'span[class*="high"]',
+                    'div[class*="temp"][class*="max"]',
+                    'span.value'
+                ]
+
+                for selector in temp_selectors:
+                    elements = soup.select(selector)
+                    if elements:
+                        for elem in elements[:3]:  # Check first few
+                            text = elem.get_text()
+                            # Extract number
+                            temp_match = re.search(r'(\d+)', text)
+                            if temp_match:
+                                temp = float(temp_match.group(1))
+                                # Foreca might be in Celsius, check if reasonable
+                                if temp < 50:  # Likely Celsius
+                                    temp = (temp * 9/5) + 32
+                                if 30 <= temp <= 110:  # Sanity check for Fahrenheit
+                                    return temp
+
+        except Exception as e:
+            print(f"Error fetching Foreca: {e}")
+
+        return None
+
+    @staticmethod
+    def get_aerisweather(api_id: Optional[str] = None, api_secret: Optional[str] = None) -> Optional[float]:
+        """
+        Get forecast from AerisWeather API
+        Sign up at: https://www.aerisweather.com/signup/
+        Free tier: 250 requests/day
+        """
+        if not api_id or not api_secret:
+            return None
+
+        try:
+            # AerisWeather API endpoint
+            url = f"https://api.aerisapi.com/forecasts/40.7128,-74.0060"
+
+            params = {
+                'client_id': api_id,
+                'client_secret': api_secret,
+                'limit': 1  # Just today
+            }
+
+            response = requests.get(url, params=params, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                if 'response' in data and len(data['response']) > 0:
+                    forecast = data['response'][0]
+                    if 'periods' in forecast and len(forecast['periods']) > 0:
+                        period = forecast['periods'][0]
+                        return float(period['maxTempF'])
+
+        except Exception as e:
+            print(f"Error fetching AerisWeather: {e}")
+
+        return None
+
+    @staticmethod
+    def get_weather_channel() -> Optional[float]:
+        """
+        Get forecast from The Weather Channel for NYC
+        weather.com is owned by IBM and often very accurate
+        """
+        try:
+            # Weather Channel URL for NYC
+            # Using weather.com which is The Weather Channel's website
+            url = "https://weather.com/weather/today/l/40.71,-74.01"
+
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                'Accept-Language': 'en-US,en;q=0.9'
+            }
+
+            response = requests.get(url, headers=headers, timeout=15)
+
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+
+                # Look for high temperature
+                # Weather.com uses various class names
+                temp_selectors = [
+                    'span[data-testid="TemperatureValue"]',
+                    'div[class*="TodayDetailsCard"] span[class*="temp"]',
+                    'span.CurrentConditions--tempValue--',
+                    'div[data-testid="wxData"] span'
+                ]
+
+                for selector in temp_selectors:
+                    elements = soup.select(selector)
+                    if elements:
+                        # Usually the high is shown prominently
+                        for elem in elements[:5]:
+                            text = elem.get_text()
+                            # Extract just the number
+                            temp_match = re.search(r'(\d+)', text)
+                            if temp_match:
+                                temp = float(temp_match.group(1))
+                                # Sanity check
+                                if 30 <= temp <= 110:
+                                    return temp
+
+                # Alternative: look in JSON-LD structured data
+                scripts = soup.find_all('script', type='application/ld+json')
+                for script in scripts:
+                    try:
+                        data = json.loads(script.string)
+                        if isinstance(data, dict) and 'temperature' in str(data):
+                            # Try to extract temperature
+                            pass
+                    except:
+                        continue
+
+        except Exception as e:
+            print(f"Error fetching Weather Channel: {e}")
+
+        return None
 
     @staticmethod
     def get_msn_weather() -> Optional[float]:
@@ -113,7 +258,12 @@ class AdditionalWeatherSources:
                     temp_text = temp_element.get_text()
                     temp_str = ''.join(c for c in temp_text if c.isdigit())
                     if temp_str:
-                        return float(temp_str)
+                        temp = float(temp_str)
+                        # AccuWeather US site should be in Fahrenheit, but check
+                        if temp < 50:  # Likely Celsius
+                            temp = (temp * 9/5) + 32
+                        if 30 <= temp <= 110:  # Sanity check
+                            return temp
 
         except Exception as e:
             print(f"Error fetching AccuWeather: {e}")
@@ -154,29 +304,53 @@ class AdditionalWeatherSources:
 
 def test_all_sources():
     """Test all additional sources"""
-    print("Testing Additional Weather Sources\n")
+    print("Testing Additional Weather Sources (Based on User Research)\n")
     print("="*60)
 
     sources = {
+        'Foreca': AdditionalWeatherSources.get_foreca,
+        'Weather Channel': AdditionalWeatherSources.get_weather_channel,
         'MSN Weather': AdditionalWeatherSources.get_msn_weather,
         'Weather.com': AdditionalWeatherSources.get_weathercom,
         'AccuWeather': AdditionalWeatherSources.get_accuweather,
     }
 
+    print("\n🌟 Priority sources (per user research for NYC):")
+    print("   1. Foreca")
+    print("   2. AerisWeather (requires API key)")
+    print("   3. Weather Channel")
+    print("   4. MSN Weather\n")
+
     for name, func in sources.items():
-        print(f"\nTesting {name}...")
+        print(f"Testing {name}...")
         try:
             temp = func()
             if temp:
-                print(f"✓ {name}: {temp}°F")
+                print(f"  ✓ {temp}°F")
             else:
-                print(f"✗ {name}: No data")
+                print(f"  ✗ No data")
         except Exception as e:
-            print(f"✗ {name}: Error - {e}")
+            print(f"  ✗ Error: {e}")
+
+    # Test AerisWeather if keys provided
+    print(f"\nTesting AerisWeather...")
+    aeris_id = None  # Set via environment or parameter
+    aeris_secret = None
+    if aeris_id and aeris_secret:
+        temp = AdditionalWeatherSources.get_aerisweather(aeris_id, aeris_secret)
+        if temp:
+            print(f"  ✓ {temp}°F")
+        else:
+            print(f"  ✗ No data")
+    else:
+        print(f"  ⚠ Requires API key (AERIS_API_ID, AERIS_API_SECRET)")
+        print(f"    Sign up: https://www.aerisweather.com/signup/")
+        print(f"    Free tier: 250 requests/day")
 
     print("\n" + "="*60)
     print("\nNote: Web scraping sources may be blocked or rate limited")
-    print("Use these as supplementary sources, not primary ones")
+    print("API-based sources (AerisWeather) are more reliable")
+    print("Test each source and use ones that work consistently")
 
 
 if __name__ == "__main__":

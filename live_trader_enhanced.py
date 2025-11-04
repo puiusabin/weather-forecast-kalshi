@@ -92,7 +92,11 @@ class EnhancedLiveTrader(LiveTrader):
         self,
         openweathermap_key: Optional[str] = None,
         weatherapi_key: Optional[str] = None,
-        include_msn: bool = True
+        aeris_api_id: Optional[str] = None,
+        aeris_api_secret: Optional[str] = None,
+        include_msn: bool = True,
+        include_foreca: bool = True,
+        include_weather_channel: bool = True
     ) -> Dict[str, float]:
         """Get forecasts including MSN and other sources"""
         today = datetime.now()
@@ -108,12 +112,36 @@ class EnhancedLiveTrader(LiveTrader):
         if temp:
             forecasts['NWS'] = temp
 
-        # MSN Weather (user reports this as best)
+        # Priority sources from user research for NYC
+        from additional_sources import AdditionalWeatherSources
+
+        # Foreca (user research: good for NYC)
+        if include_foreca:
+            temp = AdditionalWeatherSources.get_foreca()
+            if temp:
+                forecasts['Foreca'] = temp
+                print("✓ Foreca data retrieved (user research: good for NYC)")
+
+        # AerisWeather (user research: good for NYC, requires API)
+        if aeris_api_id and aeris_api_secret:
+            temp = AdditionalWeatherSources.get_aerisweather(aeris_api_id, aeris_api_secret)
+            if temp:
+                forecasts['AerisWeather'] = temp
+                print("✓ AerisWeather data retrieved (user research: good for NYC)")
+
+        # The Weather Channel (user research: good for NYC)
+        if include_weather_channel:
+            temp = AdditionalWeatherSources.get_weather_channel()
+            if temp:
+                forecasts['WeatherChannel'] = temp
+                print("✓ Weather Channel data retrieved (user research: good for NYC)")
+
+        # MSN Weather (previous research: good results)
         if include_msn:
             temp = EnhancedWeatherForecasts.get_msn_forecast(today)
             if temp:
                 forecasts['MSN'] = temp
-                print("✓ MSN Weather data retrieved (user's preferred source)")
+                print("✓ MSN Weather data retrieved")
 
         # OpenWeatherMap (optional)
         if openweathermap_key:
@@ -136,11 +164,17 @@ class EnhancedLiveTrader(LiveTrader):
         if not forecasts:
             return None, 0.0
 
-        # Assign weights based on observed accuracy
+        # Assign weights based on user research and observed accuracy
         weights = {
-            'MSN': 2.0,           # User reports this is best
-            'NWS': 1.5,           # Official US government
-            'OpenMeteo': 1.0,     # Good baseline
+            # User research: best for NYC
+            'Foreca': 2.0,         # User research: good for NYC
+            'AerisWeather': 2.0,   # User research: good for NYC
+            'WeatherChannel': 2.0, # User research: good for NYC
+            'MSN': 2.0,            # Previous research: good results
+
+            # Standard sources
+            'NWS': 1.5,            # Official US government
+            'OpenMeteo': 1.0,      # Good baseline
             'OpenWeatherMap': 1.0,
             'WeatherAPI': 1.0,
         }
@@ -157,12 +191,18 @@ class EnhancedLiveTrader(LiveTrader):
         consensus = weighted_sum / total_weight if total_weight > 0 else 0
 
         # Calculate confidence
-        # Higher confidence if MSN agrees with consensus
-        if 'MSN' in forecasts:
-            msn_diff = abs(forecasts['MSN'] - consensus)
-            base_confidence = 0.85 if msn_diff < 1.0 else 0.70
-        else:
-            base_confidence = 0.70
+        # Higher confidence if any priority source agrees with consensus
+        priority_sources = ['Foreca', 'AerisWeather', 'WeatherChannel', 'MSN']
+        priority_agreement = False
+
+        for source in priority_sources:
+            if source in forecasts:
+                diff = abs(forecasts[source] - consensus)
+                if diff < 1.0:
+                    priority_agreement = True
+                    break
+
+        base_confidence = 0.85 if priority_agreement else 0.70
 
         # Adjust confidence based on source agreement
         if len(forecasts) > 1:
@@ -181,12 +221,19 @@ class EnhancedLiveTrader(LiveTrader):
     def make_trading_decision(
         self,
         openweathermap_key: Optional[str] = None,
-        weatherapi_key: Optional[str] = None
+        weatherapi_key: Optional[str] = None,
+        aeris_api_id: Optional[str] = None,
+        aeris_api_secret: Optional[str] = None
     ) -> Optional[TradingDecision]:
         """Make enhanced trading decision"""
 
         # Get forecasts
-        forecasts = self.get_today_forecast(openweathermap_key, weatherapi_key)
+        forecasts = self.get_today_forecast(
+            openweathermap_key=openweathermap_key,
+            weatherapi_key=weatherapi_key,
+            aeris_api_id=aeris_api_id,
+            aeris_api_secret=aeris_api_secret
+        )
 
         if not forecasts:
             print("No forecasts available")
