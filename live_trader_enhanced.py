@@ -159,7 +159,6 @@ class EnhancedLiveTrader(LiveTrader):
         weights = {
             # User research: best for NYC
             'Foreca': 2.0,         # User research: good for NYC
-            'WeatherChannel': 2.0, # User research: good for NYC
             'MSN': 2.0,            # Previous research: good results
 
             # Standard sources
@@ -167,6 +166,7 @@ class EnhancedLiveTrader(LiveTrader):
             'OpenMeteo': 1.0,      # Good baseline
             'OpenWeatherMap': 1.0,
             'WeatherAPI': 1.0,
+            'WeatherChannel': 1.0,
         }
 
         # Calculate weighted average

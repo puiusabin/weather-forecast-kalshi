@@ -29,8 +29,8 @@ class TradingDecision:
 class WeatherForecasts:
     """Fetch forecasts from multiple sources"""
 
-    NYC_LAT = 40.7128
-    NYC_LON = -74.0060
+    NYC_LAT = 40.7831
+    NYC_LON = -73.9712
 
     @staticmethod
     def get_openmeteo_forecast(target_date: datetime) -> Optional[float]:
