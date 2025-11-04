@@ -5,6 +5,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     cron \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
@@ -13,8 +14,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
 COPY data_fetchers.py .
+COPY data_logger.py .
 COPY live_trader.py .
+COPY live_trader_enhanced.py .
+COPY additional_sources.py .
 COPY track_performance.py .
+COPY analyze_sources.py .
 COPY automated_runner.py .
 
 # Create data directory for persistent storage

@@ -43,8 +43,11 @@ After 7 days:
 # Stop collection
 docker-compose down
 
-# Analyze data
+# Analyze overall performance
 python analyze_week.py
+
+# Compare forecast sources (NEW!)
+python analyze_sources.py
 
 # Optimize strategy
 python strategy_optimizer.py
@@ -92,11 +95,12 @@ python strategy_optimizer.py
 
 ### For Daily Use
 - `live_trader_enhanced.py` - Main trading system (use this)
-- `trades.json` - Your trade log
+- `trades.json` - Your trade log (now includes individual source data!)
 
 ### For Analysis
 - `track_performance.py` - Check your win rate
 - `analyze_week.py` - Detailed weekly analysis
+- `analyze_sources.py` - Compare forecast source accuracy (NEW!)
 - `strategy_optimizer.py` - Get improvement suggestions
 
 ### For Docker

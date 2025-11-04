@@ -47,12 +47,29 @@ def run_daily_trade():
 
     # Get API key from environment if available
     api_key = os.environ.get('OPENWEATHERMAP_API_KEY')
+    weatherapi_key = os.environ.get('WEATHERAPI_KEY')
 
-    trader = LiveTrader()
+    # Import the enhanced trader for better source tracking
+    from live_trader_enhanced import EnhancedLiveTrader
+    trader = EnhancedLiveTrader()
 
     try:
+        # Get all individual forecasts
+        forecasts = trader.get_today_forecast(
+            openweathermap_key=api_key,
+            weatherapi_key=weatherapi_key
+        )
+
+        if forecasts:
+            log_message("Individual forecasts:")
+            for source, temp in forecasts.items():
+                log_message(f"  {source}: {temp:.1f}°F")
+
         # Make trading decision
-        decision = trader.make_trading_decision(openweathermap_key=api_key)
+        decision = trader.make_trading_decision(
+            openweathermap_key=api_key,
+            weatherapi_key=weatherapi_key
+        )
 
         if decision:
             # Save to persistent storage
@@ -64,15 +81,20 @@ def run_daily_trade():
             except FileNotFoundError:
                 trades = []
 
-            trade_data = {
-                'date': decision.date,
-                'forecast_temp': decision.forecast_temp,
-                'source': decision.source,
-                'market_ticker': decision.market_ticker,
-                'market_subtitle': decision.market_subtitle,
-                'confidence': decision.confidence,
-                'timestamp': datetime.now().isoformat()
-            }
+            # Use comprehensive logger for maximum data capture
+            from data_logger import ComprehensiveLogger
+
+            markets = trader.get_todays_markets()
+
+            trade_data = ComprehensiveLogger.create_comprehensive_log_entry(
+                date=decision.date,
+                forecasts=forecasts,
+                consensus=decision.forecast_temp,
+                confidence=decision.confidence,
+                market_ticker=decision.market_ticker,
+                market_subtitle=decision.market_subtitle,
+                markets=markets
+            )
 
             trades.append(trade_data)
 
@@ -82,8 +104,9 @@ def run_daily_trade():
             log_message(f"✓ Trade logged successfully")
             log_message(f"  Market: {decision.market_subtitle}")
             log_message(f"  Ticker: {decision.market_ticker}")
-            log_message(f"  Forecast: {decision.forecast_temp:.1f}°F")
+            log_message(f"  Consensus: {decision.forecast_temp:.1f}°F")
             log_message(f"  Confidence: {decision.confidence:.1%}")
+            log_message(f"  Sources: {', '.join(forecasts.keys())}")
 
             # Generate summary stats
             log_message("")

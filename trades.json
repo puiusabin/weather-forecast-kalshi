@@ -16,5 +16,14 @@
     "market_subtitle": "58\u00b0 to 59\u00b0",
     "confidence": 0.39999999999999997,
     "timestamp": "2025-11-04T20:42:35.897128"
+  },
+  {
+    "date": "2025-11-04",
+    "forecast_temp": 58.888888888888886,
+    "source": "WeightedConsensus(MSN)",
+    "market_ticker": "KXHIGHNY-25NOV04-B58.5",
+    "market_subtitle": "58\u00b0 to 59\u00b0",
+    "confidence": 0.5753259819594196,
+    "timestamp": "2025-11-04T20:48:08.699518"
   }
 ]
