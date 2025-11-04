@@ -1,0 +1,20 @@
+[
+  {
+    "date": "2025-11-04",
+    "forecast_temp": 59.0,
+    "source": "Consensus",
+    "market_ticker": "KXHIGHNY-25NOV04-B58.5",
+    "market_subtitle": "58\u00b0 to 59\u00b0",
+    "confidence": 0.8333333333333334,
+    "timestamp": "2025-11-04T20:37:55.602581"
+  },
+  {
+    "date": "2025-11-04",
+    "forecast_temp": 58.8,
+    "source": "WeightedConsensus(MSN)",
+    "market_ticker": "KXHIGHNY-25NOV04-B58.5",
+    "market_subtitle": "58\u00b0 to 59\u00b0",
+    "confidence": 0.39999999999999997,
+    "timestamp": "2025-11-04T20:42:35.897128"
+  }
+]

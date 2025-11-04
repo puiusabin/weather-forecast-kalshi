@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  weather-trader:
+    build: .
+    container_name: weather-trader
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - TZ=Europe/Bucharest  # UTC+3 (adjust if needed)
+      - TRADING_TIME=09:00   # 9 AM your time
+      - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY:-}  # Optional
+    restart: unless-stopped

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.gitignore
+.idea/
+.vscode/
+*.log
+data/
+logs/
+test_*.py
+trades.json

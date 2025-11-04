@@ -1,0 +1,7 @@
+# Run trading bot at 9 AM daily (Europe/Bucharest time)
+0 9 * * * cd /app && python automated_runner.py >> /var/log/cron.log 2>&1
+
+# Update performance metrics at 10 AM daily (after markets settle)
+0 10 * * * cd /app && python track_performance.py >> /var/log/cron.log 2>&1
+
+# Empty line required at end of crontab file
