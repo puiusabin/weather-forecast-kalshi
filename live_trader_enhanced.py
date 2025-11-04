@@ -92,8 +92,6 @@ class EnhancedLiveTrader(LiveTrader):
         self,
         openweathermap_key: Optional[str] = None,
         weatherapi_key: Optional[str] = None,
-        aeris_api_id: Optional[str] = None,
-        aeris_api_secret: Optional[str] = None,
         include_msn: bool = True,
         include_foreca: bool = True,
         include_weather_channel: bool = True
@@ -121,13 +119,6 @@ class EnhancedLiveTrader(LiveTrader):
             if temp:
                 forecasts['Foreca'] = temp
                 print("✓ Foreca data retrieved (user research: good for NYC)")
-
-        # AerisWeather (user research: good for NYC, requires API)
-        if aeris_api_id and aeris_api_secret:
-            temp = AdditionalWeatherSources.get_aerisweather(aeris_api_id, aeris_api_secret)
-            if temp:
-                forecasts['AerisWeather'] = temp
-                print("✓ AerisWeather data retrieved (user research: good for NYC)")
 
         # The Weather Channel (user research: good for NYC)
         if include_weather_channel:
@@ -168,7 +159,6 @@ class EnhancedLiveTrader(LiveTrader):
         weights = {
             # User research: best for NYC
             'Foreca': 2.0,         # User research: good for NYC
-            'AerisWeather': 2.0,   # User research: good for NYC
             'WeatherChannel': 2.0, # User research: good for NYC
             'MSN': 2.0,            # Previous research: good results
 
@@ -192,7 +182,7 @@ class EnhancedLiveTrader(LiveTrader):
 
         # Calculate confidence
         # Higher confidence if any priority source agrees with consensus
-        priority_sources = ['Foreca', 'AerisWeather', 'WeatherChannel', 'MSN']
+        priority_sources = ['Foreca', 'WeatherChannel', 'MSN']
         priority_agreement = False
 
         for source in priority_sources:
@@ -221,18 +211,14 @@ class EnhancedLiveTrader(LiveTrader):
     def make_trading_decision(
         self,
         openweathermap_key: Optional[str] = None,
-        weatherapi_key: Optional[str] = None,
-        aeris_api_id: Optional[str] = None,
-        aeris_api_secret: Optional[str] = None
+        weatherapi_key: Optional[str] = None
     ) -> Optional[TradingDecision]:
         """Make enhanced trading decision"""
 
         # Get forecasts
         forecasts = self.get_today_forecast(
             openweathermap_key=openweathermap_key,
-            weatherapi_key=weatherapi_key,
-            aeris_api_id=aeris_api_id,
-            aeris_api_secret=aeris_api_secret
+            weatherapi_key=weatherapi_key
         )
 
         if not forecasts:

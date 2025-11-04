@@ -62,41 +62,6 @@ class AdditionalWeatherSources:
         return None
 
     @staticmethod
-    def get_aerisweather(api_id: Optional[str] = None, api_secret: Optional[str] = None) -> Optional[float]:
-        """
-        Get forecast from AerisWeather API
-        Sign up at: https://www.aerisweather.com/signup/
-        Free tier: 250 requests/day
-        """
-        if not api_id or not api_secret:
-            return None
-
-        try:
-            # AerisWeather API endpoint
-            url = f"https://api.aerisapi.com/forecasts/40.7128,-74.0060"
-
-            params = {
-                'client_id': api_id,
-                'client_secret': api_secret,
-                'limit': 1  # Just today
-            }
-
-            response = requests.get(url, params=params, timeout=10)
-
-            if response.status_code == 200:
-                data = response.json()
-                if 'response' in data and len(data['response']) > 0:
-                    forecast = data['response'][0]
-                    if 'periods' in forecast and len(forecast['periods']) > 0:
-                        period = forecast['periods'][0]
-                        return float(period['maxTempF'])
-
-        except Exception as e:
-            print(f"Error fetching AerisWeather: {e}")
-
-        return None
-
-    @staticmethod
     def get_weather_channel() -> Optional[float]:
         """
         Get forecast from The Weather Channel for NYC
@@ -317,9 +282,8 @@ def test_all_sources():
 
     print("\n🌟 Priority sources (per user research for NYC):")
     print("   1. Foreca")
-    print("   2. AerisWeather (requires API key)")
-    print("   3. Weather Channel")
-    print("   4. MSN Weather\n")
+    print("   2. Weather Channel")
+    print("   3. MSN Weather\n")
 
     for name, func in sources.items():
         print(f"Testing {name}...")
@@ -332,24 +296,8 @@ def test_all_sources():
         except Exception as e:
             print(f"  ✗ Error: {e}")
 
-    # Test AerisWeather if keys provided
-    print(f"\nTesting AerisWeather...")
-    aeris_id = None  # Set via environment or parameter
-    aeris_secret = None
-    if aeris_id and aeris_secret:
-        temp = AdditionalWeatherSources.get_aerisweather(aeris_id, aeris_secret)
-        if temp:
-            print(f"  ✓ {temp}°F")
-        else:
-            print(f"  ✗ No data")
-    else:
-        print(f"  ⚠ Requires API key (AERIS_API_ID, AERIS_API_SECRET)")
-        print(f"    Sign up: https://www.aerisweather.com/signup/")
-        print(f"    Free tier: 250 requests/day")
-
     print("\n" + "="*60)
     print("\nNote: Web scraping sources may be blocked or rate limited")
-    print("API-based sources (AerisWeather) are more reliable")
     print("Test each source and use ones that work consistently")
 
 

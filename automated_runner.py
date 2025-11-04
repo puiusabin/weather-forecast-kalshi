@@ -48,8 +48,6 @@ def run_daily_trade():
     # Get API keys from environment if available
     api_key = os.environ.get('OPENWEATHERMAP_API_KEY')
     weatherapi_key = os.environ.get('WEATHERAPI_KEY')
-    aeris_id = os.environ.get('AERIS_API_ID')
-    aeris_secret = os.environ.get('AERIS_API_SECRET')
 
     # Import the enhanced trader for better source tracking
     from live_trader_enhanced import EnhancedLiveTrader
@@ -59,9 +57,7 @@ def run_daily_trade():
         # Get all individual forecasts (including user's researched sources)
         forecasts = trader.get_today_forecast(
             openweathermap_key=api_key,
-            weatherapi_key=weatherapi_key,
-            aeris_api_id=aeris_id,
-            aeris_api_secret=aeris_secret
+            weatherapi_key=weatherapi_key
         )
 
         if forecasts:
@@ -72,9 +68,7 @@ def run_daily_trade():
         # Make trading decision
         decision = trader.make_trading_decision(
             openweathermap_key=api_key,
-            weatherapi_key=weatherapi_key,
-            aeris_api_id=aeris_id,
-            aeris_api_secret=aeris_secret
+            weatherapi_key=weatherapi_key
         )
 
         if decision:

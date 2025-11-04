@@ -2,13 +2,12 @@
 
 ## Overview
 
-Based on your research, three additional sources have been added that show good results for NYC:
+Based on your research, two additional sources have been added that show good results for NYC:
 
 1. **Foreca** ⭐
-2. **AerisWeather** ⭐ (requires API key)
-3. **The Weather Channel** ⭐
+2. **The Weather Channel** ⭐
 
-All three are weighted equally at 2.0x (same as MSN) based on your research.
+Both are weighted at 2.0x (same as MSN) based on your research.
 
 ## Source Details
 
@@ -24,30 +23,7 @@ All three are weighted equally at 2.0x (same as MSN) based on your research.
   - May be blocked occasionally
 - **Weight**: 2.0x
 
-### 2. AerisWeather (Recommended)
-- **Type**: API (requires free signup)
-- **Website**: https://www.aerisweather.com/signup/
-- **Free Tier**: 250 requests/day
-- **Pros**:
-  - Reliable API (no scraping)
-  - Professional weather data
-  - Per your research: good for NYC
-  - 250 requests = 8+ trades per day
-- **Cons**:
-  - Requires registration
-  - Need to add API credentials
-- **Weight**: 2.0x
-
-**Setup**:
-```bash
-# 1. Sign up at https://www.aerisweather.com/signup/
-# 2. Get your API ID and Secret
-# 3. Add to .env file:
-AERIS_API_ID=your_id_here
-AERIS_API_SECRET=your_secret_here
-```
-
-### 3. The Weather Channel
+### 2. The Weather Channel
 - **Type**: Web scraping (free)
 - **Website**: https://weather.com
 - **Pros**:
@@ -65,7 +41,6 @@ AERIS_API_SECRET=your_secret_here
 weights = {
     # Priority sources (user research: best for NYC)
     'Foreca': 2.0,
-    'AerisWeather': 2.0,
     'WeatherChannel': 2.0,
     'MSN': 2.0,
 
@@ -91,9 +66,8 @@ Testing Additional Weather Sources (Based on User Research)
 
 🌟 Priority sources (per user research for NYC):
    1. Foreca
-   2. AerisWeather (requires API key)
-   3. Weather Channel
-   4. MSN Weather
+   2. Weather Channel
+   3. MSN Weather
 
 Testing Foreca...
   ✓ 60.0°F
@@ -101,10 +75,6 @@ Testing Foreca...
 Testing Weather Channel...
   ✓ 59.0°F
 
-Testing AerisWeather...
-  ⚠ Requires API key (AERIS_API_ID, AERIS_API_SECRET)
-    Sign up: https://www.aerisweather.com/signup/
-    Free tier: 250 requests/day
 ```
 
 ## Integration Status
@@ -135,7 +105,6 @@ sudo docker-compose logs --tail=50 | grep "retrieved"
 You should see:
 ```
 ✓ Foreca data retrieved (user research: good for NYC)
-✓ AerisWeather data retrieved (user research: good for NYC)
 ✓ Weather Channel data retrieved (user research: good for NYC)
 ```
 
@@ -148,14 +117,14 @@ python live_trader_enhanced.py
 
 ## Expected Improvements
 
-With 3-4 high-quality sources (Foreca, AerisWeather, WeatherChannel, MSN):
+With 3-4 high-quality sources (Foreca, WeatherChannel, MSN, NWS):
 
 **Before (2-3 sources)**:
 - Average confidence: 70-75%
 - Win rate: ~30-35%
 - Forecast error: 1.5°F
 
-**After (6-7 sources with priority sources)**:
+**After (5-6 sources with priority sources)**:
 - Average confidence: 80-85%
 - Win rate: 35-40%+ (target)
 - Forecast error: 1.0-1.2°F (better consensus)
@@ -178,11 +147,11 @@ Example output:
 ```
 ACCURACY RANKINGS
 ----------------------------------------------------------------------
-🥇 AerisWeather        0.80°F  (user research validated!)
-🥈 Foreca              0.95°F  (user research validated!)
-🥉 WeatherChannel      1.10°F  (user research validated!)
-4. MSN                 1.15°F
-5. NWS                 1.25°F
+🥇 Foreca              0.85°F  (user research validated!)
+🥈 WeatherChannel      1.00°F  (user research validated!)
+🥉 MSN                 1.15°F
+4. NWS                 1.25°F
+5. OpenMeteo           1.45°F
 ```
 
 ## Troubleshooting
@@ -198,29 +167,14 @@ ACCURACY RANKINGS
 - Dynamic content may need updates
 - System falls back gracefully
 
-### "AerisWeather not working"
-- Check API credentials in .env
-- Verify 250 requests/day not exceeded
-- Check logs: `sudo docker-compose logs | grep Aeris`
-
 ## Recommendation
 
 **Week 1**: Test all sources, see which work reliably
 
 **Week 2**: After analyzing with `analyze_sources.py`, adjust weights:
-- If AerisWeather is best: increase to 3.0x
-- If Foreca underperforms: reduce to 1.5x
+- If Foreca is best: increase to 3.0x
+- If Weather Channel underperforms: reduce to 1.5x
 - Data-driven weight adjustments
-
-## API Key Priority
-
-If you can only get one API key, prioritize:
-
-1. **AerisWeather** (your research + reliable API)
-2. WeatherAPI.com (good free tier)
-3. OpenWeatherMap (popular, reliable)
-
-But honestly, Foreca + Weather Channel (free scraping) + your existing sources should be solid.
 
 ## Source Availability Tracking
 
@@ -237,10 +191,10 @@ python analyze_patterns.py
 Will show:
 ```
 Source Availability:
-  AerisWeather: 7/7 days (100%)
   Foreca: 5/7 days (71%)
   WeatherChannel: 6/7 days (86%)
   MSN: 4/7 days (57%)
+  NWS: 7/7 days (100%)
 ```
 
 This helps you understand which sources are most reliable.
@@ -255,23 +209,14 @@ This helps you understand which sources are most reliable.
    sudo docker-compose up -d --build
    ```
 
-2. **(Optional) Add AerisWeather API key**:
-   ```bash
-   cd ~/weather-forecast-kalshi
-   cp .env.example .env
-   nano .env  # Add your AerisWeather credentials
-   sudo docker-compose down
-   sudo docker-compose up -d
-   ```
-
-3. **Verify sources working**:
+2. **Verify sources working**:
    ```bash
    sudo docker exec weather-trader python /app/additional_sources.py
    ```
 
-4. **Collect data for 7 days**
+3. **Collect data for 7 days**
 
-5. **Validate your research**:
+4. **Validate your research**:
    ```bash
    python analyze_sources.py
    ```
@@ -281,5 +226,5 @@ Your research will be validated or refined with real data! 🎯
 ---
 
 *Sources added based on user research: Nov 4, 2025*
-*Priority: Foreca, AerisWeather, The Weather Channel*
-*All weighted 2.0x for NYC forecasts*
+*Priority: Foreca, The Weather Channel*
+*Both weighted 2.0x for NYC forecasts*
