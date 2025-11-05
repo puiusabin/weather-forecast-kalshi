@@ -93,8 +93,8 @@ class EnhancedLiveTrader(LiveTrader):
         openweathermap_key: Optional[str] = None,
         weatherapi_key: Optional[str] = None,
         include_msn: bool = True,
-        include_foreca: bool = True,
-        include_weather_channel: bool = True
+        include_foreca: bool = False,  # Disabled: scraper unreliable
+        include_weather_channel: bool = False  # Disabled: scraper unreliable
     ) -> Dict[str, float]:
         """Get forecasts including MSN and other sources"""
         today = datetime.now()
@@ -157,15 +157,17 @@ class EnhancedLiveTrader(LiveTrader):
 
         # Assign weights based on user research and observed accuracy
         weights = {
-            # User research: best for NYC
-            'Foreca': 2.0,         # User research: good for NYC
-            'MSN': 2.0,            # Previous research: good results
+            # Priority sources (API-based, reliable)
+            'MSN': 2.0,            # User research: good results
+            'NWS': 2.0,            # Official US government (Central Park)
 
             # Standard sources
-            'NWS': 1.5,            # Official US government
-            'OpenMeteo': 1.0,      # Good baseline
+            'OpenMeteo': 1.5,      # Good baseline, reliable API
             'OpenWeatherMap': 1.0,
             'WeatherAPI': 1.0,
+
+            # Disabled scrapers (unreliable)
+            'Foreca': 1.0,
             'WeatherChannel': 1.0,
         }
 
@@ -181,8 +183,8 @@ class EnhancedLiveTrader(LiveTrader):
         consensus = weighted_sum / total_weight if total_weight > 0 else 0
 
         # Calculate confidence
-        # Higher confidence if any priority source agrees with consensus
-        priority_sources = ['Foreca', 'WeatherChannel', 'MSN']
+        # Higher confidence if NWS or MSN agrees with consensus
+        priority_sources = ['NWS', 'MSN']
         priority_agreement = False
 
         for source in priority_sources:

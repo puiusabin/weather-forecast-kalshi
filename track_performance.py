@@ -24,8 +24,8 @@ class PerformanceTracker:
     """Track and analyze trading performance"""
 
     BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"
-    NYC_LAT = 40.7128
-    NYC_LON = -74.0060
+    NYC_LAT = 40.7831  # Central Park
+    NYC_LON = -73.9712  # Central Park
 
     def __init__(self, trades_file: str = "trades.json"):
         self.trades_file = trades_file

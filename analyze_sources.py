@@ -13,8 +13,8 @@ import statistics
 class SourceAnalyzer:
     """Analyze accuracy of individual forecast sources"""
 
-    NYC_LAT = 40.7128
-    NYC_LON = -74.0060
+    NYC_LAT = 40.7831  # Central Park
+    NYC_LON = -73.9712  # Central Park
 
     def __init__(self, trades_file: str = "data/trades.json"):
         self.trades_file = trades_file

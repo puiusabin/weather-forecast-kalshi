@@ -12,8 +12,9 @@ class ComprehensiveLogger:
     """Log all possible data points for analysis"""
 
     BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"
-    NYC_LAT = 40.7128
-    NYC_LON = -74.0060
+    # Central Park coordinates (where NWS measures)
+    NYC_LAT = 40.7831
+    NYC_LON = -73.9712
 
     @staticmethod
     def get_weather_context() -> Dict[str, Any]:

@@ -16,12 +16,13 @@ class AdditionalWeatherSources:
     @staticmethod
     def get_foreca() -> Optional[float]:
         """
-        Get forecast from Foreca for NYC
+        Get forecast from Foreca for NYC Central Park
         Foreca is known for good European and US forecasts
         """
         try:
-            # Foreca URL for New York City
-            url = "https://www.foreca.com/United-States/New-York/New-York"
+            # Foreca URL for Central Park, Manhattan (10024 zip code for Upper West Side near Central Park)
+            # This is closer to where NWS measures than generic "New York"
+            url = "https://www.foreca.com/United-States/New-York/Manhattan"
 
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
@@ -64,13 +65,13 @@ class AdditionalWeatherSources:
     @staticmethod
     def get_weather_channel() -> Optional[float]:
         """
-        Get forecast from The Weather Channel for NYC
+        Get forecast from The Weather Channel for NYC Central Park
         weather.com is owned by IBM and often very accurate
         """
         try:
-            # Weather Channel URL for NYC
-            # Using weather.com which is The Weather Channel's website
-            url = "https://weather.com/weather/today/l/40.71,-74.01"
+            # Weather Channel URL for Central Park NYC (where NWS gets data)
+            # Coordinates: 40.7831, -73.9712
+            url = "https://weather.com/weather/today/l/40.78,-73.97"
 
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
