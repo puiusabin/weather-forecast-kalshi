@@ -75,6 +75,7 @@ class WeatherForecasts:
             response = requests.get(points_url, headers=headers, timeout=10)
             if response.status_code == 200:
                 data = response.json()
+                print(response.json())
                 forecast_url = data['properties']['forecast']
 
                 # Get the forecast

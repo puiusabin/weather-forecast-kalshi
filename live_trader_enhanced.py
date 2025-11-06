@@ -213,9 +213,57 @@ class EnhancedLiveTrader(LiveTrader):
     def make_trading_decision(
         self,
         openweathermap_key: Optional[str] = None,
-        weatherapi_key: Optional[str] = None
+        weatherapi_key: Optional[str] = None,
+        check_cooling_trend: bool = True
     ) -> Optional[TradingDecision]:
         """Make enhanced trading decision"""
+
+        # STRATEGY 1: Check for cooling trend opportunity (99% confidence)
+        if check_cooling_trend:
+            from cooling_trend_strategy import CoolingTrendDetector
+
+            cooling_opportunity = CoolingTrendDetector.detect_cooling_trend(datetime.now())
+
+            if cooling_opportunity:
+                print("\n🎯 USING COOLING TREND STRATEGY (OBSERVED DATA)")
+                print(f"   Observed temp: {cooling_opportunity.observed_temp:.1f}°F")
+                print(f"   Confidence: {cooling_opportunity.confidence:.1%}\n")
+
+                # Get markets
+                markets = self.get_todays_markets()
+                if not markets:
+                    print("No markets available for today")
+                    return None
+
+                # Find market for observed temp
+                best_market = self.find_best_market(markets, cooling_opportunity.observed_temp)
+
+                if not best_market:
+                    print("Could not find matching market for observed temp")
+                    print("Falling back to forecast-based strategy...\n")
+                else:
+                    decision = TradingDecision(
+                        date=datetime.now().strftime('%Y-%m-%d'),
+                        forecast_temp=cooling_opportunity.observed_temp,
+                        source="CoolingTrend(Observed)",
+                        market_ticker=best_market['ticker'],
+                        market_subtitle=best_market['subtitle'],
+                        confidence=cooling_opportunity.confidence
+                    )
+
+                    print(f"\n{'='*60}")
+                    print(f"🎯 HIGH CONFIDENCE COOLING TREND DECISION:")
+                    print(f"  Strategy: Observed data (max temp at midnight)")
+                    print(f"  Market: {best_market['subtitle']}")
+                    print(f"  Ticker: {best_market['ticker']}")
+                    print(f"  Confidence: {cooling_opportunity.confidence:.1%}")
+                    print(f"  Risk: Minimal (temps only decrease from here)")
+                    print(f"{'='*60}\n")
+
+                    return decision
+
+        # STRATEGY 2: Regular forecast-based approach
+        print("Using regular forecast-based strategy")
 
         # Get forecasts
         forecasts = self.get_today_forecast(

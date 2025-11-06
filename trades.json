@@ -52,5 +52,14 @@
     "market_subtitle": "59\u00b0 or below",
     "confidence": 0.39999999999999997,
     "timestamp": "2025-11-05T10:34:42.618265"
+  },
+  {
+    "date": "2025-11-06",
+    "forecast_temp": 48.02,
+    "source": "CoolingTrend(Observed)",
+    "market_ticker": "KXHIGHNY-25NOV06-T53",
+    "market_subtitle": "52\u00b0 or below",
+    "confidence": 0.99,
+    "timestamp": "2025-11-06T14:43:50.002268"
   }
 ]
