@@ -56,7 +56,14 @@ class ContinuousMonitor:
     NYC_LAT = 40.7831  # Central Park
     NYC_LON = -73.9712
 
-    def __init__(self, data_dir: str = "/app/data/monitoring"):
+    def __init__(self, data_dir: Optional[str] = None):
+        # Use /app for Docker, ./data for local testing
+        if data_dir is None:
+            if os.path.exists('/app'):
+                data_dir = '/app/data/monitoring'
+            else:
+                data_dir = './data/monitoring'
+
         self.data_dir = data_dir
         os.makedirs(data_dir, exist_ok=True)
         self.observations = []
